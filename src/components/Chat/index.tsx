@@ -18,6 +18,8 @@ const Chat: React.FC = () => {
 
   const messageRef = database.ref().child("Messages");
   const [messages, setMessages] = useState<Array<IMessage>>([]);
+  const [limit, setLimit] = useState<number>(20);
+  const [messageCount, messageCountSet] = useState<number>(0)
 
   const HandleSubmit = (event:FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -39,29 +41,37 @@ const Chat: React.FC = () => {
     
   }, [messages])
 
+  const upLimit = useCallback(() => {
+    setLimit(old => old + 2);
+  }, []);
+
+
   useEffect(() => {
     
     messageRef.orderByChild("time").on('child_changed', function(data){
       const _data:IMessage = Object.assign(data.val(), {key : data.key})
       setLists(_data);
-      console.log('changed');
    });
 
   }, [setLists, messageRef]);
 
   useEffect(() => {
-    messageRef.orderByChild("time").on('child_added', function(data){
+    messageRef.limitToLast(limit).orderByChild("time").on('child_added', function(data){
           const _data:IMessage = Object.assign(data.val(), {key : data.key})
           getLists(_data);
+          messageCountSet(old => old+1);
       });
-  }, [getLists]);
+  }, [getLists, upLimit, limit]);
 
   return (
     <div className="Chat">
       <div className="Messages" ref={el => {if(el) el.scrollTop = el.scrollHeight}}>
         {
+          messageCount === limit && <label style={{textAlign: "center", display: "block", color: 'white'}} onClick={upLimit}>Mostrar Mais</label>
+        }
+        {
           messages && messages.map((message: IMessage) => {  
-          
+
           return <Message
               author={message.author}
               content={message.content}

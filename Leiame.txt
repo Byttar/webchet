@@ -1,0 +1,3 @@
+Para rodar o projeto utilize o live server na pasta WebChat.
+
+qualquer problema falar comigo: nadaletriel@gmail.com
